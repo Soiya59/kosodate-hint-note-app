@@ -1,0 +1,39 @@
+{
+  "name": "kosodate-hint-note-app",
+  "version": "0.1.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
+    "lint": "node tools/lint/node_modules/eslint/bin/eslint.js -c tools/lint/eslint.config.mjs \"app/**/*.tsx\" \"src/**/*.{ts,tsx}\"",
+    "build:web": "expo export --platform web",
+    "db:start": "supabase start -x realtime,storage-api,imgproxy,studio,logflare,vector,supavisor,postgres-meta",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:test": "supabase test db"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~56.0.19",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@supabase/supabase-js": "^2.112.3",
+    "expo": "56",
+    "expo-constants": "~56.0.23",
+    "expo-linking": "~56.0.16",
+    "expo-router": "~56.2.18",
+    "expo-status-bar": "~56.0.4",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.85.3",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-url-polyfill": "^4.0.0",
+    "react-native-web": "^0.21.2"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.2",
+    "supabase": "^2.114.0",
+    "typescript": "~6.0.3"
+  }
+}

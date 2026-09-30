@@ -1,0 +1,7 @@
+{
+  "name": "khn-e2e",
+  "private": true,
+  "type": "module",
+  "description": "通しの確認（ローカル専用）。パソコンの Chrome を使う（ブラウザはダウンロードしない）",
+  "devDependencies": { "playwright-core": "^1.55.0" }
+}

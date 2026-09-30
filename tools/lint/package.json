@@ -1,0 +1,11 @@
+{
+  "name": "khn-lint",
+  "private": true,
+  "type": "module",
+  "description": "フックの規則の検査だけ（本体の依存と版がぶつからないよう別にした。2026-10-01 開発部）",
+  "devDependencies": {
+    "eslint": "^10.10.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "@typescript-eslint/parser": "^8.70.0"
+  }
+}

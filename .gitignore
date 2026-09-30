@@ -1,0 +1,49 @@
+# 子育てヒントノート（2026-09-30 開発部。2026-10-01 公開のリポジトリにする前に見直した）
+# このリポジトリは公開する。秘密の値・家族のデータ・書き出し・バックアップ・ローカルの設定は入れない。
+
+# パッケージ（本体・tools/e2e・tools/lint のどれも）
+node_modules/
+
+# Expo（書き出しの出力はローカルの鍵が入ることがあるので入れない。配信は GitHub Actions が作る）
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# 秘密の値・ローカルの設定（公開しない。見本の .env.example だけ入れる）
+.env
+.env.*
+!.env.example
+
+# Supabase の CLI が作るもの（本番のプロジェクトへのリンク・ローカルの鍵が入る）
+supabase/.branches
+supabase/.temp
+supabase/.env
+
+# ネイティブ（作るときに生成する）・鍵のファイル
+/ios
+/android
+*.jks
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+
+# 道具のログなど
+.metro-health-check*
+npm-debug.*
+*.log
+*.tsbuildinfo
+.DS_Store
+test-results/
+playwright-report/
+
+# 通し確認の写真・書き出したファイル（ローカルの見本データが写るため公開しない）
+tools/e2e/out/
+
+# 念のため: バックアップ・書き出しのファイルをこのフォルダに置いてしまったとき
+*.dump
+backup/
+kosodate-hint-note-*.md
+kosodate-hint-note-*.csv

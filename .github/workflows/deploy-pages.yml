@@ -1,0 +1,94 @@
+# 子育てヒントノート: 画面を GitHub Pages に配信する（2026-10-01 開発部）
+# おやこポイントの .github/workflows/deploy-pages.yml（読むだけ）を元に作った。
+#
+# 順番（要件 v0.9 9-3節「main への反映 → 検査（lint・型検査・権限表の自動テスト）→ 配信。検査が落ちたら配信しない」）:
+#   1. check  … フックの規則（lint）・型検査・権限表の自動テスト（ローカルの Supabase を Actions の中で立ち上げて supabase test db）
+#   2. build  … check が通ったときだけ。Expo の Web 版を書き出す（道の先頭は /kosodate-hint-note-app）
+#   3. deploy … build が通ったときだけ。GitHub Pages に出す
+#
+# 本番の Supabase の住所と公開用の鍵は、GitHub の repository variables から渡す（ファイルには書かない）:
+#   EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_ANON_KEY
+#   （公開用の鍵＝画面に入る前提の鍵。service_role・secret・DB のパスワードはここにも置かない）
+# 本番の DB にはつながない（テストは Actions の中の使い捨てのローカルの Supabase で流す）。
+
+name: Deploy web (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm ci --prefix tools/lint
+      # フックの規則（useState を早期リターンの後ろに置くなど。型検査では見つからない）。落ちたら配信しない
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      # 権限表の自動テスト（設計書 第12章。468件）。使い捨てのローカルの Supabase を Docker で立ち上げる
+      - name: 権限表の自動テスト
+        run: |
+          npx supabase start -x realtime,storage-api,imgproxy,studio,edge-runtime,logflare,vector,supavisor,postgres-meta,mailpit
+          npx supabase test db
+      - if: always()
+        run: npx supabase stop --no-backup || true
+
+  build:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: 本番の値が登録されているか
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          test -n "$EXPO_PUBLIC_SUPABASE_URL" || { echo "repository variables の EXPO_PUBLIC_SUPABASE_URL が空です"; exit 1; }
+          test -n "$EXPO_PUBLIC_SUPABASE_ANON_KEY" || { echo "repository variables の EXPO_PUBLIC_SUPABASE_ANON_KEY が空です"; exit 1; }
+          case "$EXPO_PUBLIC_SUPABASE_ANON_KEY" in sb_secret_*) echo "secret の鍵は使えません（公開用の鍵を入れてください）"; exit 1;; esac
+      - run: npx expo export -p web
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+          # 道の先頭（https://soiya59.github.io/kosodate-hint-note-app/ の下に置くため。app.config.js が読む）
+          EXPO_PUBLIC_BASE_URL: /kosodate-hint-note-app
+          # この配信の番号（古い画面が残らないための手当て。src/lib/updateCheck.ts）
+          EXPO_PUBLIC_APP_BUILD: ${{ github.sha }}
+      # GitHub Pages は画面の中の道（/kosodate-hint-note-app/settings など）を知らないので、
+      # 無い道を直接開いたときも画面の殻を返すよう index.html を 404.html として置く（おやこポイントと同じ定番の手当て）
+      - run: cp dist/index.html dist/404.html
+      # この配信の番号。画面が開いたとき・アプリに戻ったときに読み、違えば1回だけ読み込み直す
+      - run: echo "{\"build\":\"${GITHUB_SHA}\"}" > dist/version.json
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
