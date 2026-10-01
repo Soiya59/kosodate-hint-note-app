@@ -25,7 +25,11 @@ param(
   [string]$Root = "",
   [int]$KeepDays = 14,
   [string]$Label = "",
-  [switch]$SkipEncryptionCheck
+  [switch]$SkipEncryptionCheck,
+  # 失敗したときに「失敗のお知らせ」のファイルを置く場所（既定は統括のデスクトップ。成功すると消える。中身にメールアドレスは入れない）
+  [string]$NoticeDir = "",
+  # 書き出さずに、古いものを消す処理だけを流す（2026-10-02 のテスト用。tools\test_backup_prune.ps1 が使う）
+  [switch]$PruneOnly
 )
 $ErrorActionPreference = "Continue"
 $AppDir = Split-Path -Parent $PSScriptRoot
@@ -53,6 +57,33 @@ function Test-Encrypted($path) {
   return @{ Drive = $drive; Value = $v; Ok = ($v -eq 1) }
 }
 
+if (-not $NoticeDir) { $NoticeDir = [Environment]::GetFolderPath("Desktop") }
+$Notice = Join-Path $NoticeDir "【バックアップ失敗】子育てヒントノート.txt"
+
+# 古いバックアップを消す（2026-10-02 に安全のための条件を足した）。消すのは次の全部に当てはまるものだけ:
+#   ・$Root の直下の、名前がちょうど「yyyy-MM-dd」のフォルダ（ラベルつきの手動の控え「2026-10-02-before-…」は消さない）
+#   ・フォルダの中に data.sql と counts.txt がある（バックアップの形をしている）
+#   ・ショートカット（リンク・ジャンクション）ではない（リンク先の別のフォルダを消さないため）
+#   ・最後に書き込まれた日が $KeepDays 日より前
+#   ・今回書き出したフォルダ（$keepDir）ではない
+function Remove-OldBackups($rootDir, $days, $keepDir) {
+  $rootFull = [System.IO.Path]::GetFullPath($rootDir).TrimEnd('\')
+  Get-ChildItem -LiteralPath $rootFull -Directory -Force | Where-Object {
+    $_.Name -match '^\d{4}-\d{2}-\d{2}$' -and
+    -not ($_.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -and
+    ([System.IO.Path]::GetDirectoryName($_.FullName).TrimEnd('\') -eq $rootFull) -and
+    $_.FullName -ne $keepDir -and
+    $_.LastWriteTime -lt (Get-Date).AddDays(-$days) -and
+    (Test-Path -LiteralPath (Join-Path $_.FullName "data.sql")) -and
+    (Test-Path -LiteralPath (Join-Path $_.FullName "counts.txt"))
+  } | ForEach-Object {
+    Remove-Item -LiteralPath $_.FullName -Recurse -Force
+    Write-Log "removed old $($_.Name)"
+  }
+}
+
+if ($PruneOnly) { Remove-OldBackups $Root $KeepDays ""; Write-Output "PRUNE-ONLY done"; exit 0 }
+
 try {
   if (-not $SkipEncryptionCheck) {
     $e = Test-Encrypted $Root
@@ -78,13 +109,27 @@ try {
   ($counts.GetEnumerator() | ForEach-Object { "{0}`t{1}" -f $_.Key, $_.Value }) | Set-Content -Path (Join-Path $Dir "counts.txt") -Encoding utf8
   Write-Log ("OK {0} schema={1} data={2} trials={3} users={4}" -f $Name, $s, $d, $counts["public.trials"], $counts["auth.users"])
 
-  Get-ChildItem $Root -Directory | Where-Object { $_.Name -match '^\d{4}-\d{2}-\d{2}$' -and $_.LastWriteTime -lt (Get-Date).AddDays(-$KeepDays) } | ForEach-Object {
-    Remove-Item -Recurse -Force $_.FullName
-    Write-Log "removed old $($_.Name)"
-  }
+  Remove-OldBackups $Root $KeepDays $Dir
+  # 最後の結果（統括が1か所で見られる）。成功したら失敗のお知らせを消す
+  Set-Content -Path (Join-Path $Root "last_result.txt") -Value ("{0} OK {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $Name) -Encoding utf8
+  if (Test-Path -LiteralPath $Notice) { Remove-Item -LiteralPath $Notice -Force }
   Write-Output "OK: $Dir"
 } catch {
-  Write-Log "FAILED $Name $($_.Exception.Message)"
-  Write-Output "FAILED: $($_.Exception.Message)"
+  $msg = $_.Exception.Message
+  Write-Log "FAILED $Name $msg"
+  # 途中まで書いた不完全なフォルダ（counts.txt が無い）は残さない
+  if ((Test-Path -LiteralPath $Dir) -and -not (Test-Path -LiteralPath (Join-Path $Dir "counts.txt"))) { Remove-Item -LiteralPath $Dir -Recurse -Force -ErrorAction SilentlyContinue }
+  Set-Content -Path (Join-Path $Root "last_result.txt") -Value ("{0} FAILED {1} {2}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $Name, $msg) -Encoding utf8
+  try {
+    New-Item -ItemType Directory -Force $NoticeDir | Out-Null
+    Set-Content -Path $Notice -Encoding utf8 -Value @(
+      "子育てヒントノートのバックアップに失敗しました。",
+      "日時: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')",
+      "理由: $msg",
+      "くわしい記録: $Log",
+      "（次に成功すると、このファイルは自動で消えます）"
+    )
+  } catch { }
+  Write-Output "FAILED: $msg"
   exit 1
 }
