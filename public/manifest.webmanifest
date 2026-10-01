@@ -1,0 +1,19 @@
+{
+  "id": "/kosodate-hint-note-app/",
+  "name": "子育てヒントノート",
+  "short_name": "ヒントノート",
+  "description": "みんなで試したやり方を書きためる、招待した家庭だけのノート",
+  "lang": "ja",
+  "start_url": "/kosodate-hint-note-app/",
+  "scope": "/kosodate-hint-note-app/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#2F6F62",
+  "background_color": "#FBF9F4",
+  "icons": [
+    { "src": "/kosodate-hint-note-app/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/kosodate-hint-note-app/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/kosodate-hint-note-app/icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/kosodate-hint-note-app/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

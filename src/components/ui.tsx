@@ -50,7 +50,7 @@ export function Screen(props: {
   );
   return (
     <View style={[styles.outer, { paddingTop: insets.top }]}>
-      <View style={styles.inner}>
+      <View style={styles.inner} testID="screen-inner">
         {props.header}
         {body}
         {props.footer ? <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, space.s) }]}>{props.footer}</View> : null}
@@ -326,7 +326,8 @@ export function Sheet(props: { visible: boolean; onClose: () => void; title: str
 }
 
 export const styles = StyleSheet.create({
-  outer: { flex: 1, backgroundColor: colors.bg, alignItems: "center" },
+  // 広い画面では中身（幅480px まで）を中央に。はみ出す部品があってもページ全体が横に広がらないよう切る（2026-10-01）
+  outer: { flex: 1, backgroundColor: colors.bg, alignItems: "center", overflow: "hidden" },
   inner: { flex: 1, width: "100%", maxWidth: MAX_WIDTH, backgroundColor: colors.bg },
   header: { flexDirection: "row", alignItems: "center", paddingHorizontal: space.s, height: 52, borderBottomWidth: 1, borderBottomColor: colors.border },
   headerBtn: { minHeight: 44, minWidth: 44, justifyContent: "center", paddingHorizontal: space.s },

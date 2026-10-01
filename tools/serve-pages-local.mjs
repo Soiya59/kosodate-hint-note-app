@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "dist");
 const BASE = "/kosodate-hint-note-app";
 const PORT = Number(process.env.PORT ?? 8090);
-const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".json": "application/json", ".png": "image/png", ".txt": "text/plain", ".ico": "image/x-icon", ".css": "text/css" };
+const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".json": "application/json", ".png": "image/png", ".txt": "text/plain", ".ico": "image/x-icon", ".css": "text/css", ".webmanifest": "application/manifest+json", ".svg": "image/svg+xml" };
 
 http.createServer((req, res) => {
   const url = new URL(req.url ?? "/", "http://localhost");

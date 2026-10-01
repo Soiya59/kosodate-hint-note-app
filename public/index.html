@@ -8,6 +8,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover" />
     <meta name="theme-color" content="#2F6F62" />
     <title>子育てヒントノート</title>
+    <!--
+      ホーム画面に置けるように（PWA。2026-10-01 開発部）。住所は GitHub Pages の道の先頭 /kosodate-hint-note-app/ の下に固定で書く
+      （画面の中のどの道を直接開いても 404.html＝この殻が返るので、相対の住所だと読めなくなるため）。
+      開発サーバ（道の先頭が /）ではこの4つは読めないが、画面の動きには関係しない。
+      自分のアイコンを書かないと、上の階層 soiyalab.com のアイコン（「S」）が使われる（UIUXデザイン部の注意）。
+    -->
+    <link rel="manifest" href="/kosodate-hint-note-app/manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="/kosodate-hint-note-app/icons/icon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/kosodate-hint-note-app/icons/favicon-32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/kosodate-hint-note-app/icons/apple-touch-icon.png" />
+    <!-- iPhone の Safari の「ホーム画面に追加」で出る名前 -->
+    <meta name="apple-mobile-web-app-title" content="ヒントノート" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <style id="expo-reset">
       html, body { height: 100%; }
       @supports (height: 100dvh) { html, body { height: 100dvh; } }

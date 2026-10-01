@@ -71,14 +71,18 @@ export function TagTabs(props: { items: Item[]; selected: string | null; onSelec
         {layout.overflow && !expanded ? small(`＋${layout.hidden}`, () => setExpanded(true), "home-tags-more") : null}
         {layout.overflow && expanded ? small("閉じる", () => setExpanded(false), "home-tags-close") : null}
       </View>
-      {/* 見えない所で1つずつの幅を測る（見える並びの後ろに置く） */}
-      <View pointerEvents="none" style={{ position: "absolute", opacity: 0, flexDirection: "row", left: 0, top: 0 }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      {/* 見えない所で1つずつの幅を測る（見える並びの後ろに置く）。
+          （2026-10-01 直し）測るための1行は画面の幅より長い（2,000px を超える）。そのままだとページ全体が横に広がり、
+          スマホのブラウザがページ全体を縮めて「左上に小さく」出していた（統括の気づき）。高さ0・はみ出しを切る入れ物に入れる */}
+      <View pointerEvents="none" style={{ position: "absolute", left: 0, top: 0, width: "100%", height: 0, overflow: "hidden" }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <View style={{ position: "absolute", opacity: 0, flexDirection: "row", left: 0, top: 0 }}>
         {props.items.map((it) => (
           <View key={key(it)} onLayout={(e) => { const w = Math.ceil(e.nativeEvent.layout.width); setWidths((m) => (m[key(it)] === w ? m : { ...m, [key(it)]: w })); }}>
             <Chip label={it.label} selected={props.selected === it.id} />
           </View>
         ))}
         <View onLayout={(e) => setPlusW(Math.ceil(e.nativeEvent.layout.width))}>{small("＋99", () => {}, "measure-plus")}</View>
+      </View>
       </View>
     </View>
   );

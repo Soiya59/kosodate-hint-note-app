@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>子育てヒントノート</title>
+  <rect width="512" height="512" rx="112" fill="#2F6F62"/>
+  <g transform="translate(0,-24)">
+    <!-- 芽（茎と2枚の葉） -->
+    <path d="M256 334 V214" fill="none" stroke="#FBF9F4" stroke-width="16" stroke-linecap="round"/>
+    <path d="M256 262 C218 262 184 238 174 194 C218 190 250 216 256 262 Z" fill="#E8F1EE"/>
+    <path d="M256 226 C268 180 306 152 354 154 C348 202 304 228 256 226 Z" fill="#E8F1EE"/>
+    <!-- 開いたノート -->
+    <path d="M256 336 C210 306 150 306 100 324 V418 C150 400 210 400 256 428 Z" fill="#FBF9F4"/>
+    <path d="M256 336 C302 306 362 306 412 324 V418 C362 400 302 400 256 428 Z" fill="#FBF9F4"/>
+    <path d="M256 340 V424" stroke="#2F6F62" stroke-width="6" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -1,0 +1,7 @@
+{
+  "name": "khn-icons",
+  "private": true,
+  "type": "module",
+  "description": "アイコンの SVG から PNG を作る道具（2026-10-01 開発部。本体の依存には入れない）",
+  "devDependencies": { "sharp": "^0.34.0" }
+}
