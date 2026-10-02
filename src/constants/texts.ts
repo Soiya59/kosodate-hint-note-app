@@ -11,7 +11,7 @@
  * ■ いまの文の出どころ（2026-09-30 時点）
  * - 同意画面: 要件定義書 v0.6 7-1節の枠（確定）。
  * - ログインの画面の1行: 要件定義書 v0.6 7-2節 ①b（A13＝Resend の確認 7-2節の案1）。ワイヤーフレーム v0.3 A-1 のとおり句点で3段落に分ける。
- * - 預かり方の約束: 要件定義書 v0.6 8-6節の枠（確定。残る【】は制定日だけ → 画面では「未定」）。
+ * - 預かり方の約束: 要件定義書 v0.6 8-6節の枠（確定。残る【】は制定日だけ → 下の PRIVACY_ENACTED_DATE で埋める）。
  * - 常設の一文・欄のヒント: 要件定義書 7-2節 ②③。
  * - 中身（使う目的・見える人・保存先）が変わる直しをしたら RULES_VERSION を上げ、データ置き場の
  *   current_rules_version() を同じ配信で上げる（設計書 v0.3 8-2節）。言い回しだけなら上げない。
@@ -87,11 +87,20 @@ export const CONSENT = {
   decline: FIXED.consent.buttons[1],
 };
 
-/** A-5 預かり方の約束（要件 v0.6 8-6節の枠の文を、そのまま）。制定日の【】は画面では「未定」（本部長 2026-09-30）。 */
+/**
+ * 預かり方の約束の制定日（2026-10-02・統括「きょうでよい。また修正すると思う」）。
+ * 要件 8-6節の枠では、制定日は「開発部が画面に入れた日」で、枠にはまだ【2026年◯月◯日】が残っている
+ * （企画部があとで「2026-10-02 制定」と追記する）。fixedTexts.ts は道具で写すファイルで手で直さないので、ここで【】だけを埋める。
+ * 企画部が枠に日付を書き、道具を流し直して【】が無くなったら、枠の日付がそのまま出る（この定数は使われなくなる）。
+ * 本文（約束1〜10）は変えない。日付だけの変更なので、同意の版（RULES_VERSION）は上げない。
+ */
+export const PRIVACY_ENACTED_DATE = "2026年10月2日";
+
+/** A-5 預かり方の約束（要件 v0.6 8-6節の枠の文を、そのまま）。制定日の【】は PRIVACY_ENACTED_DATE で埋める（2026-10-02。それまでは「未定」）。 */
 export const PRIVACY = {
   title: FIXED.privacy.title,
   sections: (USE_A15_TEXT ? FIXED.a15!.privacySections : FIXED.privacy.sections) as readonly { h: string; lines: readonly string[] }[],
-  enacted: FIXED.privacy.enacted.includes("【") ? "制定: 未定" : FIXED.privacy.enacted,
+  enacted: FIXED.privacy.enacted.replace(/【[^】]*】/, PRIVACY_ENACTED_DATE),
   contactEmail: "soiyalab.contact@gmail.com",
 };
 
